@@ -22,7 +22,7 @@ typedef enum{
 
 @protocol PullHeaderDelegate;
 @interface PullHeaderView : UIView {
-	UIScrollView *scrollView;
+	UIScrollView *_scrollView;
 	NSObject *delegate;
 	PullHeaderState _state;
 	PullHeaderPosition _position;
@@ -42,10 +42,10 @@ typedef enum{
 - (CGRect)makeFrameForScrollView:(UIScrollView*)scollView position:(PullHeaderPosition)position;
 
 - (void)updateSubtext;
-- (void)pullHeaderScrollViewDidScroll:(UIScrollView *)scrollView;
-- (void)pullHeaderScrollViewDidEndDragging:(UIScrollView *)scrollView;
-- (void)pullHeaderScrollViewDataSourceDidFinishedLoading:(UIScrollView *)scrollView;
-- (void)pullHeaderScrollViewDidChangeSize:(UIScrollView*)scrollView;
+- (void)pullHeaderScrollViewDidScroll:(UIScrollView *)sv;
+- (void)pullHeaderScrollViewDidEndDragging:(UIScrollView *)sv;
+- (void)pullHeaderScrollViewDataSourceDidFinishedLoading:(UIScrollView *)sv;
+- (void)pullHeaderScrollViewDidChangeSize:(UIScrollView*)sv;
 @end
 
 @protocol PullHeaderDelegate

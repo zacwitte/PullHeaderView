@@ -20,6 +20,7 @@
 
 @synthesize delegate=_delegate;
 
+static int kObservingContentSizeChangesContext;
 
 - (id)initWithScrollView:(UIScrollView*)sv arrowImageName:(NSString *)arrow textColor:(UIColor *)textColor subText:(NSString *)subText position:(PullHeaderPosition)position  {
 	
@@ -29,11 +30,13 @@
 	if((self = [super initWithFrame:frame])) {
 		CALayer *layer;
 		_originalContentSize = sv.contentSize;
+		_scrollView = sv;
+		[_scrollView addObserver:self forKeyPath:@"contentSize" options:0 context:&kObservingContentSizeChangesContext];
 		
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-		self.backgroundColor = [UIColor colorWithRed:26.0/255.0 green:31.0/255.0 blue:237.0/255.0 alpha:1.0];
+//		self.backgroundColor = [UIColor colorWithRed:26.0/255.0 green:31.0/255.0 blue:237.0/255.0 alpha:1.0];
 
-		UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 30.0f, self.frame.size.width, 20.0f)];
+		UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(50.0f, 30.0f, self.frame.size.width-50.0f, 20.0f)];
 		label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 		label.font = [UIFont systemFontOfSize:12.0f];
 		label.textColor = textColor;
@@ -57,7 +60,7 @@
 		_statusLabel=label;
 		
 		layer = [CALayer layer];
-		layer.frame = CGRectMake(25.0f, 0.0f, 30.0f, 55.0f);
+		layer.frame = CGRectMake(15.0f, 0.0f, 30.0f, 55.0f);
 		layer.contentsGravity = kCAGravityResizeAspect;
 		layer.contents = (id)[UIImage imageNamed:arrow].CGImage;
 		
@@ -84,6 +87,25 @@
 	
 	return self;
 	
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+	[self pullHeaderScrollViewDidChangeSize:_scrollView];
+	[_scrollView addObserver:self forKeyPath:@"contentSize" options:0 context:&kObservingContentSizeChangesContext];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	[_scrollView removeObserver:self forKeyPath:@"contentSize" context:&kObservingContentSizeChangesContext];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (context == &kObservingContentSizeChangesContext) {
+        UIScrollView *sv = object;
+//        NSLog(@"%@ contentSize changed to %@", sv, NSStringFromCGSize(sv.contentSize));
+		[self pullHeaderScrollViewDidChangeSize:sv];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
 }
 
 - (CGRect)makeFrameForScrollView:(UIScrollView*)scollView position:(PullHeaderPosition)position {
@@ -132,7 +154,7 @@
 			[CATransaction setAnimationDuration:FLIP_ANIMATION_DURATION];
 			_arrowImage.transform = CATransform3DMakeRotation((M_PI / 180.0) * 180.0f, 0.0f, 0.0f, 1.0f);
 			[CATransaction commit];
-			NSLog(@"perform flip. text: %@", _statusLabel.text);
+//			NSLog(@"perform flip. text: %@", _statusLabel.text);
 			
 			break;
 		case PullHeaderNormal:
@@ -271,9 +293,8 @@
 	
 }
 
-- (void)pullHeaderScrollViewDidChangeSize:(UIScrollView*)scrollView {
-	//TODO: update the frame
-	NSLog(@"TODO: update frame");
+- (void)pullHeaderScrollViewDidChangeSize:(UIScrollView*)sv {
+	self.frame = [self makeFrameForScrollView:sv position:_position];
 }
 
 
